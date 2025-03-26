@@ -1,12 +1,9 @@
 services:
   - type: web
-    name: rk-backend
-    env: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
+    name: rk-billing-backend
+    runtime: python
+    buildCommand: ""
     startCommand: python server.py
     envVars:
-      - key: FLASK_ENV
-        value: development
       - key: PORT
-        value: 10000
+        value: 10000  # optional fallback
