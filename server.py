@@ -12,7 +12,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 app = Flask(__name__)
 CORS(app)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///billing.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://rk_billing_db_user:E6zwWbPM5Z4wvfIex46USfPpYxTh9yE2@dpg-cvhqcq52ng1s739u2jng-a/rk_billing_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
