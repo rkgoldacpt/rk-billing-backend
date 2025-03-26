@@ -12,6 +12,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 app = Flask(__name__)
 CORS(app)
 
+# ✅ PostgreSQL connection
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://rk_billing_db_user:E6zwWbPM5Z4wvfIex46USfPpYxTh9yE2@dpg-cvhqcq52ng1s739u2jng-a/rk_billing_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -30,9 +31,6 @@ class Visit(db.Model):
     purchased_items = db.Column(db.Text, nullable=True)
     paid_amount = db.Column(db.Float, nullable=False, default=0)
     due_amount = db.Column(db.Float, nullable=False, default=0)
-
-with app.app_context():
-    db.create_all()
 
 def save_to_excel(filename, data_dict):
     df = pd.DataFrame(data_dict)
@@ -191,11 +189,9 @@ def generate_invoice(customer_id):
     doc.build(elements)
     return send_file(invoice_file, as_attachment=True)
 
-# ✅ THIS LINE is important for Render deployment!
+# ✅ Render fix: create tables + dynamic port
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     port = int(os.environ.get("PORT", 5001))
-
     app.run(debug=True, host="0.0.0.0", port=port)
-
-    app.run(host="0.0.0.0", port=port)
-
