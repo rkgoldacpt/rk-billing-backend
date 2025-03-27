@@ -194,8 +194,15 @@ def generate_invoice(customer_id):
             #  ✅  Corrected: Use newline as separator
             items = visit.purchased_items.split("\n")
 
+            # ✅ Add Logging for Debugging
+            logging.info(f"Raw purchased items:\n{visit.purchased_items}")
+
             for i, item in enumerate(items, 1):
                 try:
+                    # ✅ Temporary Patch: Skip Broken Rows
+                    if not item.startswith("Item: "):
+                        raise ValueError("Invalid item format")
+
                     name = item.split("Item: ")[1].split(" | ")[0]
                     gross = item.split("Gross: ")[1].split("g")[0]
                     wastage = item.split("Wastage: ")[1].split("%")[0]
@@ -203,17 +210,18 @@ def generate_invoice(customer_id):
                     gold_rate = item.split("Gold Rate: Rs.")[1].split(" |")[0]
                     lab_rate = item.split("Lab Rate: Rs.")[1].split(" |")[0]
                     amount = item.split("Amount: Rs.")[1]
+
                     table_data.append([f"#{i}", name, gross, wastage, net, gold_rate, lab_rate, amount])
                 except Exception as e:
-                    #  ✅  Error handling for parsing issues
+                    logging.error(f"Failed to parse item #{i}: {item} — {e}")
                     table_data.append([f"#{i}", item, "-", "-", "-", "-", "-", "-"])
 
         table = Table(table_data)
         table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("TEXTCOLOR", (0, 0), colors.whitesmoke),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTNAME", (0, 0), "Helvetica-Bold"),
             ("BOTTOMPADDING", (0, 0), 10),
             ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
@@ -231,7 +239,7 @@ def generate_invoice(customer_id):
         ], colWidths=[200, 50, 200])
         signature_table.setStyle(TableStyle([
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
+            ("FONTNAME", (0, 0), "Helvetica-Bold"),
         ]))
         elements.append(signature_table)
 
