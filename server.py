@@ -180,7 +180,7 @@ def generate_invoice(customer_id):
         elements.append(Paragraph("<b>ESTIMATION BILL</b>", styles["Title"]))
         elements.append(Paragraph("Address: MAIN ROAD, OLD BAZAR, ACHAMPET, 509375", styles["Normal"]))
         elements.append(Paragraph("Contact: +91 9440370408", styles["Normal"]))
-        elements.append(Paragraph("         +91 9490324969", styles["Normal"]))
+        elements.append(Paragraph("         +91 9490324969", styles["Normal"]))
         elements.append(Spacer(1, 10))
 
         elements.append(Paragraph(f"<b>Customer Name:</b> {customer.name}", styles["Normal"]))
@@ -191,18 +191,20 @@ def generate_invoice(customer_id):
         table_data = [["Sr. No.", "Item Name", "Gross Wt. (g)", "Wastage (%)", "Net Wt. (g)", "Gold Rate (Rs./g)", "Lab Rate (Rs.)", "Amount (Rs.)"]]
 
         if visit.purchased_items:
-            #  ✅  Corrected: Use newline as separator
+            # ✅ Corrected: Use newline as separator
             items = visit.purchased_items.split("\n")
 
             # ✅ Add Logging for Debugging
             logging.info(f"Raw purchased items:\n{visit.purchased_items}")
 
             for i, item in enumerate(items, 1):
-                try:
-                    # ✅ Temporary Patch: Skip Broken Rows
-                    if not item.startswith("Item: "):
-                        raise ValueError("Invalid item format")
+                item = item.strip()
 
+                if not item or not item.startswith("Item: "):
+                    logging.warning(f"Skipping malformed item: {item}")
+                    continue  # skip blank or malformed lines
+
+                try:
                     name = item.split("Item: ")[1].split(" | ")[0]
                     gross = item.split("Gross: ")[1].split("g")[0]
                     wastage = item.split("Wastage: ")[1].split("%")[0]
@@ -212,8 +214,9 @@ def generate_invoice(customer_id):
                     amount = item.split("Amount: Rs.")[1]
 
                     table_data.append([f"#{i}", name, gross, wastage, net, gold_rate, lab_rate, amount])
+
                 except Exception as e:
-                    logging.error(f"Failed to parse item #{i}: {item} — {e}")
+                    logging.error(f"Error parsing item #{i}: {item} — {e}")
                     table_data.append([f"#{i}", item, "-", "-", "-", "-", "-", "-"])
 
         table = Table(table_data)
