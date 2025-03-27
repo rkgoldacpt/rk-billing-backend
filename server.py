@@ -214,7 +214,7 @@ def generate_invoice(customer_id):
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+            ("BOTTOMPADDING", (0, 0), 10),
             ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
         ]))
@@ -242,6 +242,11 @@ def generate_invoice(customer_id):
     except Exception as e:
         logging.error(f"Error generating invoice for customer ID {customer_id}: {e}")
         return jsonify({"error": "Error generating invoice"}), 500
+
+@app.route('/')
+def home():
+    """Simple home route to check if the backend is running."""
+    return "RK Billing Backend is running!"
 
 # ✅ Render fix: create tables + dynamic port
 if __name__ == "__main__":
