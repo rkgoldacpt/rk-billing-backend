@@ -191,41 +191,52 @@ def generate_invoice(customer_id):
         table_data = [["Sr. No.", "Item Name", "Gross Wt. (g)", "Wastage (%)", "Net Wt. (g)", "Gold Rate (Rs./g)", "Lab Rate (Rs.)", "Amount (Rs.)"]]
 
         if visit.purchased_items:
-            # ✅ Corrected: Use newline as separator
             items = visit.purchased_items.split("\n")
-
-            # ✅ Add Logging for Debugging
-            logging.info(f"Raw purchased items:\n{visit.purchased_items}")
-
             for i, item in enumerate(items, 1):
                 item = item.strip()
-
                 if not item or not item.startswith("Item: "):
-                    logging.warning(f"Skipping malformed item: {item}")
-                    continue  # skip blank or malformed lines
-
+                    logging.warning(f"Skipping malformed item: '{item}'")
+                    table_data.append([f"#{i}", item, "-", "-", "-", "-", "-", "-"])
+                    continue
                 try:
-                    name = item.split("Item: ")[1].split(" | ")[0]
-                    gross = item.split("Gross: ")[1].split("g")[0]
-                    wastage = item.split("Wastage: ")[1].split("%")[0]
-                    net = item.split("Net: ")[1].split("g")[0]
-                    gold_rate = item.split("Gold Rate: Rs.")[1].split(" |")[0]
-                    lab_rate = item.split("Lab Rate: Rs.")[1].split(" |")[0]
-                    amount = item.split("Amount: Rs.")[1]
+                    parts = item.split(" | ")
+                    item_name = ""
+                    gross_wt = ""
+                    wastage = ""
+                    net_wt = ""
+                    gold_rate = ""
+                    lab_rate = ""
+                    amount = ""
 
-                    table_data.append([f"#{i}", name, gross, wastage, net, gold_rate, lab_rate, amount])
+                    for part in parts:
+                        if part.startswith("Item: "):
+                            item_name = part.split("Item: ")[1]
+                        elif part.startswith("Gross: "):
+                            gross_wt = part.split("Gross: ")[1].rstrip("g")
+                        elif part.startswith("Wastage: "):
+                            wastage = part.split("Wastage: ")[1].rstrip("%")
+                        elif part.startswith("Net: "):
+                            net_wt = part.split("Net: ")[1].rstrip("g")
+                        elif part.startswith("Gold Rate: Rs."):
+                            gold_rate = part.split("Gold Rate: Rs.")[1]
+                        elif part.startswith("Lab Rate: Rs."):
+                            lab_rate = part.split("Lab Rate: Rs.")[1]
+                        elif part.startswith("Amount: Rs."):
+                            amount = part.split("Amount: Rs.")[1]
+
+                    table_data.append([f"#{i}", item_name.strip(), gross_wt.strip(), wastage.strip(), net_wt.strip(), gold_rate.strip(), lab_rate.strip(), amount.strip()])
 
                 except Exception as e:
-                    logging.error(f"Error parsing item #{i}: {item} — {e}")
+                    logging.error(f"Error parsing item #{i}: '{item}' — {e}")
                     table_data.append([f"#{i}", item, "-", "-", "-", "-", "-", "-"])
 
         table = Table(table_data)
         table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-            ("TEXTCOLOR", (0, 0), colors.whitesmoke),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("FONTNAME", (0, 0), "Helvetica-Bold"),
-            ("BOTTOMPADDING", (0, 0), 10),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
             ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
         ]))
