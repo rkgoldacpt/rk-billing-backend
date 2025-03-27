@@ -12,8 +12,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 app = Flask(__name__)
 CORS(app)
 
-# ✅ PostgreSQL connection
-# Use SQLite instead of PostgreSQL
+# ✅ SQLite DB setup
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///rk_billing.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -89,7 +88,7 @@ def add_visit():
 
     visit = Visit(
         customer_id=data['customer_id'],
-        purchased_items=", ".join(data['purchased_items']),
+        purchased_items="\n".join(data['purchased_items']),  # 🔧 fixed here
         paid_amount=data.get("paid_amount", 0),
         due_amount=data.get("due_amount", 0)
     )
@@ -146,7 +145,7 @@ def generate_invoice(customer_id):
     table_data = [["Sr. No.", "Item Name", "Gross Wt. (g)", "Wastage (%)", "Net Wt. (g)", "Gold Rate (Rs./g)", "Lab Rate (Rs.)", "Amount (Rs.)"]]
 
     if visit.purchased_items:
-        items = visit.purchased_items.split(", ")
+        items = visit.purchased_items.split("\n")  # 🔧 fixed here
         for i, item in enumerate(items, 1):
             try:
                 name = item.split("Item: ")[1].split(" | ")[0]
@@ -189,6 +188,8 @@ def generate_invoice(customer_id):
 
     doc.build(elements)
     return send_file(invoice_file, as_attachment=True)
+
+
 
 # ✅ Render fix: create tables + dynamic port
 if __name__ == "__main__":
